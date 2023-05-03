@@ -1,0 +1,50 @@
+#lang pie
+
+(claim + (-> Nat Nat Nat))
+(define +
+  (λ (n k)
+    (iter-Nat n
+      k
+      (λ (num) (add1 num)
+        ))))
+
+(claim Sm+n=m+Sn
+       (Pi ((m Nat)
+            (n Nat))
+           (= Nat (+ (add1 m) n)
+              (+ m (add1 n)))))
+
+(claim mot-Sm+n=m+Sn
+       (-> Nat U))
+
+(define mot-Sm+n=m+Sn
+  (λ (k)
+     (Pi ((n Nat))
+         (= Nat (+ (add1 k) n)
+            (+ k (add1 n))))))
+
+(claim base-Sm+n=m+Sn
+       (mot-Sm+n=m+Sn 0))
+
+
+(define base-Sm+n=m+Sn
+  (λ (n)
+    (same (+ (add1 0) n))))
+
+(claim step-Sm+n=m+Sn
+       (Pi ((m-1 Nat))
+           (-> (mot-Sm+n=m+Sn m-1)
+               (mot-Sm+n=m+Sn (add1 m-1)))))
+
+(define step-Sm+n=m+Sn
+  (λ (m-1)
+    (λ (myeq n)
+      (cong (myeq n) (the (-> Nat Nat) (λ (x) (add1 x))))
+     )))
+
+(define Sm+n=m+Sn
+  (λ (m)
+     (ind-Nat m
+              mot-Sm+n=m+Sn
+              base-Sm+n=m+Sn
+              step-Sm+n=m+Sn)))
