@@ -1,0 +1,73 @@
+#lang pie
+(claim nill
+  (Pi ((E U))
+    (List E)))
+
+(define nill
+  (λ (E) nil))
+
+(claim step-append
+  (Pi ((E U))
+    (-> E (List E) (List E)
+        (List E))))
+
+(define step-append
+  (λ (E)
+    (λ (e es appendes)
+      (:: e appendes))))
+
+(claim append
+  (Pi ((E U))
+    (-> (List E) (List E)
+        (List E))))
+
+(define append
+(λ (E)
+  (λ (start end)
+    (rec-List start
+  end
+      (step-append E)))))
+
+(claim concat
+  (Pi ((E U))
+    (-> (List (List E)) (List E))))
+
+
+(define concat
+  (λ (E)
+    (λ (es)
+      (rec-List es
+        (nill E)
+        (λ (e es appendes)
+          (append E e appendes))))))
+
+(claim concatAtom
+  (-> (List (List Atom)) (List Atom)))
+
+(define concatAtom (concat Atom))
+
+(claim name
+  (List Atom))
+(define name
+  (:: 'Shivani
+    (:: 'Puli nil)))
+
+(claim start
+  (List Atom))
+(define start
+  (:: 'My
+    (:: 'Name nil)))
+
+(claim is
+  (List Atom))
+(define is
+  (:: 'is nil))
+
+(claim sentence
+  (List (List Atom)))
+(define sentence
+  (:: start (:: is (:: name nil))))
+
+(the (List (List Atom)) sentence)
+(concatAtom sentence)
+

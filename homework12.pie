@@ -1,0 +1,301 @@
+#lang pie
+
+;;; Arithmetic
+
+;;; +
+;;; add two Nats
+
+(claim +
+  (-> Nat Nat Nat))
+
+(claim step-+
+  (-> Nat Nat))
+
+(define step-+
+  (λ (c)
+    (add1 c)))
+
+(define +
+  (λ (a b)
+    (iter-Nat a
+      b
+      step-+)))
+ 
+;;; +0=
+
+(claim +0=
+  (Pi ((a Nat))
+    (= Nat a (+ a 0))))
+
+(claim mot-+0=
+  (-> Nat U))
+
+(define mot-+0=
+  (λ (a)
+    (= Nat
+      a
+      (+ a 0))))
+
+(claim base-+0=
+  (mot-+0= 0))
+
+(define base-+0=
+  (same 0))
+
+(claim step-+0=
+  (Pi ((a Nat))
+    (-> (mot-+0= a)
+      (mot-+0= (add1 a)))))
+      
+(define step-+0=
+  (λ (a induction-hypothesis)
+    (cong induction-hypothesis (+ 1))))
+
+(define +0=
+  (λ (a)
+    (ind-Nat a
+      mot-+0=
+      base-+0=
+      step-+0=)))
+
+;;; add1+=+add1
+
+(claim add1+=+add1
+  (Pi ((a Nat)
+       (b Nat))
+    (= Nat
+       (add1 (+ a b))
+       (+ a (add1 b)))))
+
+(claim mot-add1+=+add1
+  (-> Nat U))
+
+(define mot-add1+=+add1
+  (λ (a)
+    (Pi ((b Nat))
+      (= Nat
+         (add1 (+ a b))
+         (+ a (add1 b))))))
+
+(claim base-add1+=+add1
+  (mot-add1+=+add1 0))
+
+(define base-add1+=+add1
+  (λ (b)
+    (same (add1 b))))
+
+(claim step-add1+=+add1
+  (Pi ((a Nat))
+    (-> (mot-add1+=+add1 a)
+      (mot-add1+=+add1 (add1 a)))))
+
+(define step-add1+=+add1
+  (λ (a induction-hypothesis b)
+    (cong (induction-hypothesis b)
+      (+ 1))))
+
+(define add1+=+add1
+  (λ (a)
+    (ind-Nat a
+      mot-add1+=+add1
+      base-add1+=+add1
+      step-add1+=+add1)))
+
+;;; comm+
+
+(claim comm+
+  (Pi ((a Nat)
+       (b Nat))
+    (= Nat
+       (+ a b)
+       (+ b a))))
+
+(claim mot-comm+
+  (-> Nat U))
+
+(define mot-comm+
+  (λ (a)
+    (Pi ((b Nat))
+      (= Nat
+         (+ a b)
+         (+ b a)))))
+
+(claim base-comm+
+  (mot-comm+ 0))
+
+(define base-comm+
+  (λ (b)
+    (+0= b)))
+
+(claim step-comm+
+  (Pi ((a Nat))
+    (-> (mot-comm+ a)
+      (mot-comm+ (add1 a)))))
+
+(define step-comm+
+  (λ (a induction-hypothesis b)
+    (replace (symm (induction-hypothesis b))
+      (λ (k) (= Nat (add1 k) (+ b (add1 a))))
+      (add1+=+add1 b a))))
+
+(define comm+
+  (λ (a)
+    (ind-Nat a
+      mot-comm+
+      base-comm+
+      step-comm+)))
+
+;;; assoc+
+
+(claim mot-assoc+
+  (-> Nat U))
+
+(define mot-assoc+
+  (λ (a)
+    (Pi ((b Nat)
+         (c Nat))
+      (= Nat
+         (+ a (+ b c))
+         (+ (+ a b) c)))))
+
+(claim base-assoc+
+  (mot-assoc+ 0))
+
+(define base-assoc+
+  (λ (b c)
+    (same (+ b c))))
+
+(claim step-assoc+
+  (Pi ((a Nat))
+    (-> (mot-assoc+ a)
+      (mot-assoc+ (add1 a)))))
+
+(define step-assoc+
+  (λ (a induction-hypothesis b c)
+    (cong (induction-hypothesis b c)
+      (+ 1))))
+
+(claim assoc+
+  (Pi ((a Nat)
+       (b Nat)
+       (c Nat))
+    (= Nat
+       (+ a (+ b c))
+       (+ (+ a b) c))))
+
+(define assoc+
+  (λ (a)
+    (ind-Nat a
+      mot-assoc+
+      base-assoc+
+      step-assoc+)))
+
+(claim assoc-flip
+  (Pi ((a Nat)
+       (b Nat)
+       (c Nat))
+    (= Nat
+       (+ a (+ b c))
+       (+ b (+ a c)))))
+
+(define assoc-flip
+  (λ (a b c)
+    (trans (assoc+ a b c)
+      (trans (cong (comm+ a b)
+               (the (-> Nat Nat)
+                 (λ (z) (+ z c))))
+        (symm (assoc+ b a c))))))
+
+ 
+
+;; 12.4
+
+(claim fequiv
+  (Pi ((A U)
+       (B U)
+       (f (-> A B))
+       (g (-> A B))
+       (a A))
+       U))
+
+(define fequiv
+  (λ (A B f g)
+    (λ (a)
+      (= B (f a) (g a)))))
+
+;(fequiv Nat Nat (+ 1) (+ 1) (the Nat 3))
+
+(claim compose
+  (Pi ((A U)
+       (B U)
+       (C U))
+    (-> (-> B C)
+        (-> A B)
+        (-> A C))))
+
+(define compose
+  (λ (A B C)
+    (λ (f g)
+      (λ (a)
+        (f (g a))))))
+
+
+(claim cong2
+  (Pi ((A U)
+       (B U)
+       (C U)
+       (f (-> A B C))
+       (x0 A)
+       (x1 A)
+       (y0 B)
+       (y1 B))
+    (-> (= A x0 x1)
+        (= B y0 y1)
+        (= C (f x0 y0) (f x1 y1)))))
+
+(define cong2
+  (λ (A B C)
+    (λ (f x0 x1 y0 y1)
+      (λ (x0=x1 y0=y1)
+        (trans
+         (cong x0=x1 (the (-> A C) (λ (z) (f z y0)))) ; f x0 y0 = f x1 y0
+         (cong y0=y1 (f x1))))))) ; f x1 y0 = f x1 y1
+             ; trans: f x0 y0 = f x1 y1
+
+
+
+;;;;;;;;;;;;;;;;;;;; HOMEWORK ;;;;;;;;;;;;;;;;;;;;;;;
+(claim fequiv-compose-func
+  (Pi ((A U)
+       (B U)
+       (C U)
+       (f0 (-> B C))
+       (f1 (-> B C))
+       (g0 (-> A B))
+       (g1 (-> A B)))
+    (-> (= (-> A B) g0 g1) (= (-> B C) f0 f1)
+        (= (-> A C) (compose A B C f0 g0) (compose A B C f1 g1)))))
+
+(define fequiv-compose-func
+  (λ (A B C f0 f1 g0 g1)
+    (λ (f0=f1 g0=g1)
+        (trans (cong f0=f1 (the ( -> (-> A B) (-> A C)) (λ (g) (compose A B C f0 g)))) ; f0 g0 = f0 g1
+        (cong g0=g1 (the (-> (-> B C) (-> A C)) (λ (f) (compose A B C f g1))))) ; f0 g1 = f1 g1
+      )))
+;trans ( (g0 f0 = g0 f1) ( g0 f1 = g1 f1)
+
+
+(claim reorg-+
+  (Pi ((a Nat) (b Nat) (c Nat) (d Nat))
+    (= Nat ( + (+ a b) (+ c d)) (+ ( + a c) ( + b d)))))
+
+(define reorg-+
+  (λ (a b c d)
+    (trans (trans (trans (assoc-flip (+ a b) c d)
+      (cong (symm (assoc+ a b d)) (the (-> Nat Nat) (λ (x) (+ c x))))) ;+ c ( + a ( + b d)
+      (assoc+ c a (+ b d))) ; + ( + c a) ( + b d)
+      (cong (comm+ c a) (the (-> Nat Nat) (λ (x) (+ x (+ b d))))))))
+
+
+; + (+ a b) (+ c d) -> assoc symm -> + c (+ (+ a b) d) -> assoc -> + c ( + a ( + b d)))
+; -> assoc -> + ( + c a) (+ b d) -> symm -> + (+ a c ) ( + b d)

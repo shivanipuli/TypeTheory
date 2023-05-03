@@ -1,0 +1,53 @@
+#lang pie
+
+(claim nill
+  (Pi ((E U))
+    (List E)))
+
+(define nill
+  (λ (E) nil))
+            
+(claim mot
+  (Pi ((E U) (k Nat))
+    (-> (Vec E k) U)))
+
+(define mot
+  (λ (E k)
+      (λ (vk)
+        (List E))))
+
+;(mot Atom 1 (vec:: 'hello vecnil))
+
+(claim step
+  (Pi ((E U)
+       (k Nat)
+       (h E)
+       (vk (Vec E k)))
+    (-> (List E)
+        (List E))))
+
+(define step
+  (λ (E k h vk)
+    (λ (lis)
+      (:: h lis))))
+
+;((step Atom 2 'hi (vec:: 'my (vec::  'name vecnil))) (:: 'this (::'is nil)))
+
+(claim vec-to-list
+  (Pi ((E U)
+      (l Nat))
+     (-> (Vec E l)
+         (List E))))
+
+(define vec-to-list
+  (λ (E k)
+    (λ (vk)
+      (ind-Vec k vk
+        (mot E)
+        (nill E)
+        (step E)))))
+
+(claim myVec (Vec Atom 3))
+(define myVec (vec:: 'hi (vec:: 'my (vec:: 'name vecnil))))
+
+(vec-to-list Atom 3 myVec)

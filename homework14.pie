@@ -1,0 +1,80 @@
+#lang pie
+
+
+(claim +
+  (-> Nat Nat Nat))
+
+(claim step-+
+  (-> Nat Nat))
+
+(define step-+
+  (λ (c)
+    (add1 c)))
+
+(define +
+  (λ (a b)
+    (iter-Nat a
+      b
+      step-+)))
+
+(claim *
+  (-> Nat Nat Nat))
+
+(define *
+  (λ (a b)
+    (iter-Nat a
+      0
+      (+ b))))
+
+(claim divides
+  (-> Nat Nat
+    U))
+
+(define divides
+  (λ (a b)
+    (Σ ((m Nat))
+      (= Nat (* a m) b))))
+
+(claim refl-divides
+  (Pi ((a Nat))
+    (Σ ((m Nat))
+       U)))
+
+(define refl-divides
+  (λ (a)
+    (cons 1 (divides a a))));(= Nat a ( * 1 a))))))
+
+
+;Sigma ( haf) ( = n (1 + double haf)) -> (Sigma (+1 haf) ( = (+ 1 n) ( +1 + 1 double haf))
+
+(claim trans-divide
+  (Pi ((a Nat) (b Nat) (c Nat))
+      (-> (divides a b) (divides b c) (Σ ((m Nat))
+       U))))
+
+(define trans-divide
+  (λ (a b c divab divbc)
+    (cons ( * (car divab) (car divbc)) (= Nat (* a (* (car divab) (car divbc))) c))))
+    
+     ;(cons (* (car divab) (car divbc)) (cong (symm (cdr divab)) (cdr divbc)))
+;cdr divab =>  ( = Nat ( * m a) b) * (car divbc)  > (= Nat (* m n a) (* b ))
+       
+(claim testing (Sigma ((m Nat)) U))
+;(define testing (cons 5 (same 5)))
+
+; am = b ^ bn = c -> a (mn) = c
+;cdr: ( = Nat (*a m) b) ( = Nat c ( * ( * a m) n))
+
+(claim 2-divides-6 (divides 2 6))
+(define 2-divides-6
+  (cons 3 (same 6)))
+
+2-divides-6
+
+(claim 6-divides-12 (divides 6 12))
+(define 6-divides-12
+  (cons 2 (same 12)))
+
+;(refl-divides 2)
+
+;(trans-divide 2 6 12 2-divides-6 6-divides-12)

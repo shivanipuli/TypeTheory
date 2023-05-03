@@ -1,0 +1,116 @@
+#lang pie
+
+
+(claim Not (-> U U))
+
+(define Not
+  (λ (x)
+    (-> x Absurd)))
+
+(claim Dec (-> U U))
+
+(define Dec
+  (λ (A)
+    (Either A (Not A))))
+
+(claim DecEq (-> U U))
+
+(define DecEq
+(λ (A)
+  (Pi ((a0 A)
+       (a1 A))
+    (Dec (= A a0 a1)))))
+
+(claim fst
+(Pi ((A U)
+(B U))
+(-> (Pair A B) A)))
+
+(define fst
+  (λ (A B p)
+    (car p)))
+
+(claim snd
+  (Pi ((A U)
+       (B U))
+    (-> (Pair A B) B)))
+
+(define snd
+  (λ (A B p)
+    (cdr p)))
+
+(claim neq-car->neq-pair
+  (Pi ((A U)
+       (B U)
+       (p0 (Pair A B))
+       (p1 (Pair A B)))
+    (-> (Not (= A (car p0) (car p1)))
+        (Not (= (Pair A B) p0 p1)))))
+
+(define neq-car->neq-pair
+  (λ (A B p0 p1 notA)
+    (λ (notP)
+      (notA (cong notP (fst A B))))))
+
+
+(claim neq-cdr->neq-pair
+  (Pi ((A U)
+       (B U)
+       (p0 (Pair A B))
+       (p1 (Pair A B)))
+    (-> (Not (= B (cdr p0) (cdr p1)))
+        (Not (= (Pair A B) p0 p1)))))
+
+(define neq-cdr->neq-pair
+  (λ (A B p0 p1 notB)
+    (λ (notP)
+      (notB (cong notP (snd A B))))))
+
+(claim eq-car-eq-cdr->eq-pair
+  (Pi ((A U)
+       (B U)
+       (p0 (Pair A B))
+       (p1 (Pair A B)))
+    (-> (= A (car p0) (car p1))
+        (= B (cdr p0) (cdr p1))
+      (= (Pair A B) p0 p1))))
+
+(define eq-car-eq-cdr->eq-pair
+  (λ (A B p0 p1)
+    (λ (eqcar eqcdr)
+      (trans
+       (cong eqcdr
+         (the (-> B (Pair A B)) (λ (b) (cons (car p0) b))))
+        (cong eqcar
+          (the (-> A (Pair A B)) (λ(a) (cons a (cdr p1)))))))))
+
+(claim DecEq-Pair
+  (Pi ((A U)
+       (B U))
+    (-> (DecEq A)
+        (DecEq B)
+      (DecEq (Pair A B)))))
+
+(claim mot-DecEq-Pair
+  (Pi ((A U)
+       (B U)
+       (p0 (Pair A B))
+       (p1 (Pair A B)))
+    U))
+
+(define mot-DecEq-Pair
+  (λ (A B p0 p1)
+    (Dec (= (Pair A B) p0 p1))))
+
+
+(define DecEq-Pair
+  (λ (A B deqA deqB p0 p1)
+    (ind-Either (deqA (car p0) (car p1))
+      (λ (_)
+        (mot-DecEq-Pair A B p0 p1))
+      (λ (a0-eq-a1)
+        (ind-Either (deqB (cdr p0) (cdr p1))
+          (λ (_) (mot-DecEq-Pair A B p0 p1))
+          (λ (b0-eq-b1) (left (eq-car-eq-cdr->eq-pair A B p0 p1 a0-eq-a1 b0-eq-b1)))
+          (λ (b0-neq-b1) (right (neq-cdr->neq-pair A B p0 p1 b0-neq-b1)))))
+      (λ (a0-neq-a1) (right (neq-car->neq-pair A B p0 p1 a0-neq-a1))))))

@@ -1,0 +1,17 @@
+#lang pie
+(claim second
+  (∏ ((E U)
+    (l Nat))
+    (-> (Vec E (add1(add1 l)))
+        E)))
+
+(define second
+  (λ (E)
+    (λ (l)
+      (λ (es)
+        (head(tail es))))))
+
+(claim myVec (Vec Atom 4))
+(define myVec (vec:: 'this (vec:: 'target (vec:: 'hi (vec:: 'there vecnil)))))
+
+((second Atom 2) myVec)

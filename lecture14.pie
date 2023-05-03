@@ -1,0 +1,58 @@
+#lang pie
+
+(claim either
+  (Pi ((A U)
+       (B U)
+       (C U))
+    (-> (Either A B)
+        (-> A C)
+        (-> B C)
+        C)))
+
+(define either
+  (λ (A B C either left-f right-f)
+    (ind-Either either
+      (λ (_) C)
+        left-f
+        right-f)))
+
+
+(claim +
+  (-> Nat Nat Nat))
+
+(claim step-+
+  (-> Nat Nat))
+
+(define step-+
+  (λ (c)
+    (add1 c)))
+
+(define +
+  (λ (a b)
+    (iter-Nat a
+      b
+      step-+)))
+
+(claim Subtract (-> Nat Nat Nat U))
+(define Subtract 
+(lambda (a b c)
+( = Nat ( + b c) a)))
+
+(claim sub-swap
+(Pi (( a Nat) (b Nat) (c Nat)
+(-> (Subtract a b c) (Subtract :wq!
+
+(define sub-swap
+(lambda ( a b c sub-abc)
+TODO))
+
+(claim aaaa
+  (Sigma ((a Nat) (b Nat)) ; = Sigma ((a Nat)) (Sigma ((b Nat)) (= Nat (+ a b) 10))))
+    (= Nat (+ a b) 10)))
+
+(define aaaa
+  (cons 7
+    (cons 3
+      (same 10))))
+
+aaaa

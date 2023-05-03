@@ -1,0 +1,36 @@
+#lang pie
+
+
+(claim mot-count-down
+  (-> Nat U))
+(define mot-count-down
+  (λ (k) (Vec Nat k)))
+
+(claim base-count-down
+  (mot-count-down 0))
+
+(define base-count-down
+  vecnil)
+
+(claim step-count-down
+  (Pi ((k Nat))
+    (-> (mot-count-down k)
+        (mot-count-down (add1 k)))))
+
+(define step-count-down
+  (λ (k vk)
+    (vec:: k vk)))
+
+
+(claim count-down
+  (Pi ((n Nat))
+    (Vec Nat n)))
+
+(define count-down
+  (λ (n)
+    (ind-Nat n
+      mot-count-down
+      base-count-down
+      step-count-down)))
+
+(count-down 10)

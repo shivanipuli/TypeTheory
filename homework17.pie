@@ -1,0 +1,137 @@
+#lang pie
+
+(claim front
+  (Pi ((E U)
+       (n Nat))
+    (-> (Vec E (add1 n))
+        E)))
+
+(claim mot-front
+  (Pi ((E U)
+       (k Nat))
+    (-> (Vec E k)
+        U)))
+
+(define mot-front
+  (λ (E k)
+    (λ (es)
+      (Pi ((j Nat))
+      (-> (= Nat k (add1 j))
+          E)))))
+
+(claim step-front
+  (Pi ((E U)
+       (l Nat)
+       (e E)
+       (es (Vec E l)))
+    (-> (mot-front E
+          l
+          es)
+        (mot-front E
+          (add1 l)
+          (vec:: e es)))))
+
+(define step-front
+  (λ (E l e es)
+    (λ (frontes)
+      (λ (j eq)
+        e))))
+
+(claim use-Nat=
+  TODO)
+(define use-Nat=
+  TODO)
+
+(claim zero-not-add1
+  (Pi ((n Nat))
+    (-> (= Nat zero (add1 n))
+        Absurd)))
+
+(define zero-not-add1
+  (λ (n)
+    TODO))
+    ;(use-Nat= zero (add1 n))))
+
+(define front
+  (λ (E l es)
+    ((ind-Vec (add1 l) es
+       (mot-front E)
+       (λ (j eq)
+         (ind-Absurd
+           (zero-not-add1 j eq)
+         E))
+       (step-front E))
+      l (same(add1 l)))))
+
+(claim ur-front
+  (Pi ((E U)
+       (n Nat))
+    (-> (Vec E n)
+        (Sigma ((l Nat))
+          (= Nat n (add1 l)))
+        E)))
+
+(define ur-front
+  (λ (E n myvec sig)
+    (head (replace (cdr sig)
+            (λ (k)
+              (Vec E k))
+            myvec))))
+
+(ur-front Atom 3 (vec:: 'Shivani (vec:: 'ismy (vec:: 'name vecnil))) (cons 2 (same 3)))
+
+(claim Not (-> U U))
+
+(define Not
+  (λ (x)
+    (-> x Absurd)))
+
+
+(Not (= Nat 0 6))
+
+(claim not-zero->add1
+  (Pi ((n Nat))
+    (-> (Not (= Nat n 0))
+        (Sigma ((l Nat))
+          (= Nat n (add1 l))))))
+
+(claim mot (-> Nat U))
+(define mot
+  (λ (n)
+    (-> (Not (= Nat n zero)) (Sigma ((l Nat)) (= Nat n (add1 l))))))
+
+(claim base (mot zero))
+
+(define base
+  (λ (notzero)
+    (cons (ind-Absurd (notzero (same 0)) Nat)
+      (ind-Absurd (notzero (same 0))
+        (= Nat 0 (add1 (ind-Absurd (notzero (same 0)) Nat)))))))
+
+(claim step
+  (Pi ((n Nat))
+    (-> (mot n)
+        (mot (add1 n)))))
+
+(define step
+  (λ (n not-zero stepn-1)
+    (cons n (same (add1 n)))))
+
+(define not-zero->add1
+  (λ (n)
+    (ind-Nat n
+      mot
+      base
+      step)))
+                   
+
+(claim alt-front
+  (Pi ((E U)
+       (n Nat))
+    (-> (Vec E n)
+        (Not (= Nat n 0))
+      E)))
+
+(define alt-front
+  (λ (E n vec not)
+    (ur-front E n vec (not-zero->add1 n not))))

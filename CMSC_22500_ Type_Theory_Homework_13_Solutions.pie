@@ -1,0 +1,37 @@
+#lang pie
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                injective                                 ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(claim injective (Pi ((A U) (B U))
+                   (-> (-> A B) U)))
+(define injective (λ(A B f)
+                    (Pi ((a0 A) (a1 A))
+                      (-> (= B (f a0) (f a1)) (= A a0 a1)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                 compose                                  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(claim compose (Pi ((A U) (B U) (C U) (g (-> B C)) (f (-> A B)))
+                 (Pi ((a A)) C)))
+(define compose (λ(A B C g f)
+                  (λ(a)
+                    (g (f a)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                              comp-injective                              ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(claim comp-injective
+  (Pi ((A U) (B U) (C U) (f (-> A B)) (g (-> B C)))
+    (-> (injective A B f) (injective B C g) (injective A C (compose A B C g f)))))
+(define comp-injective
+  (λ (A B C f g injective-f injective-g)
+    (λ (a0 a1 gfa0=gfa1)
+      (injective-f a0 a1 (injective-g (f a0) (f a1) gfa0=gfa1)))))

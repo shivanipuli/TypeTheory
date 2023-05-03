@@ -1,0 +1,338 @@
+#lang pie
+
+;;; Assignment-15-starter.pie
+;;; Starter File
+
+;;; Since we're not actually performing additions, and instead are
+;;; proving theorems, we don't actually need implementation of + or 
+;;; comm+.
+
+(claim +
+  (-> Nat Nat Nat))
+
+(claim step-+
+  (-> Nat Nat))
+
+(define step-+
+  (λ (c)
+    (add1 c)))
+
+(define +
+  (λ (a b)
+    (iter-Nat a
+      b
+      step-+)))
+ 
+;;; +0=
+
+(claim +0=
+  (Pi ((a Nat))
+    (= Nat a (+ a 0))))
+
+(claim mot-+0=
+  (-> Nat U))
+
+(define mot-+0=
+  (λ (a)
+    (= Nat
+      a
+      (+ a 0))))
+
+(claim base-+0=
+  (mot-+0= 0))
+
+(define base-+0=
+  (same 0))
+
+(claim step-+0=
+  (Pi ((a Nat))
+    (-> (mot-+0= a)
+      (mot-+0= (add1 a)))))
+      
+(define step-+0=
+  (λ (a induction-hypothesis)
+    (cong induction-hypothesis (+ 1))))
+
+(define +0=
+  (λ (a)
+    (ind-Nat a
+      mot-+0=
+      base-+0=
+      step-+0=)))
+
+;;; add1+=+add1
+
+(claim add1+=+add1
+  (Pi ((a Nat)
+       (b Nat))
+    (= Nat
+       (add1 (+ a b))
+       (+ a (add1 b)))))
+
+(claim mot-add1+=+add1
+  (-> Nat U))
+
+(define mot-add1+=+add1
+  (λ (a)
+    (Pi ((b Nat))
+      (= Nat
+         (add1 (+ a b))
+         (+ a (add1 b))))))
+
+(claim base-add1+=+add1
+  (mot-add1+=+add1 0))
+
+(define base-add1+=+add1
+  (λ (b)
+    (same (add1 b))))
+
+(claim step-add1+=+add1
+  (Pi ((a Nat))
+    (-> (mot-add1+=+add1 a)
+      (mot-add1+=+add1 (add1 a)))))
+
+(define step-add1+=+add1
+  (λ (a induction-hypothesis b)
+    (cong (induction-hypothesis b)
+      (+ 1))))
+
+(define add1+=+add1
+  (λ (a)
+    (ind-Nat a
+      mot-add1+=+add1
+      base-add1+=+add1
+      step-add1+=+add1)))
+
+;;; comm+
+
+(claim comm+
+  (Pi ((a Nat)
+       (b Nat))
+    (= Nat
+       (+ a b)
+       (+ b a))))
+
+(claim mot-comm+
+  (-> Nat U))
+
+(define mot-comm+
+  (λ (a)
+    (Pi ((b Nat))
+      (= Nat
+         (+ a b)
+         (+ b a)))))
+
+(claim base-comm+
+  (mot-comm+ 0))
+
+(define base-comm+
+  (λ (b)
+    (+0= b)))
+
+(claim step-comm+
+  (Pi ((a Nat))
+    (-> (mot-comm+ a)
+      (mot-comm+ (add1 a)))))
+
+(define step-comm+
+  (λ (a induction-hypothesis b)
+    (replace (symm (induction-hypothesis b))
+      (λ (k) (= Nat (add1 k) (+ b (add1 a))))
+      (add1+=+add1 b a))))
+
+(define comm+
+  (λ (a)
+    (ind-Nat a
+      mot-comm+
+      base-comm+
+      step-comm+)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(claim Int
+  U)
+
+(define Int
+  (Either Nat Nat))
+
+(claim pos
+  (-> Nat Int))
+
+(define pos
+  (λ (n)
+    (right n)))
+
+(claim neg
+  (-> Nat Int))
+
+(define neg
+  (λ (n)
+    (left n)))
+
+
+;;; Assignment 15.1. Complete show-Int.
+
+
+(claim show-Int
+  (-> Int (Pair Atom Nat)))
+
+(claim mot-showInt
+  (-> Int U))
+
+(define mot-showInt
+  (λ (int)
+    (Pair Atom Nat)))
+
+(claim onLeft
+  (Pi ((n Nat))
+    (Pair Atom Nat)))
+
+(define onLeft
+  (λ (n)
+    (which-Nat n
+      (the (Pair Atom Nat) (cons 'zero 0))
+    (λ (x) (cons 'neg (add1 x))))))
+
+(claim onRight
+  (Pi ((n Nat))
+    (Pair Atom Nat)))
+
+(define onRight
+  (λ (n)
+    (which-Nat n
+      (the (Pair Atom Nat) (cons 'zero 0))
+    (λ (x) (cons 'pos (add1 x))))))
+
+(define show-Int
+  (λ (int)
+    (ind-Either int
+      mot-showInt
+      onLeft
+      onRight
+  )))
+    
+
+
+(claim norm
+  (-> Nat Nat Int))
+
+(claim base-norm
+  (-> Nat Int))
+
+(define base-norm
+  (λ (b)
+    (which-Nat b
+      (the Int
+        (right 0))
+      (λ (b-1) (left (add1 b-1))))))
+
+(claim step-norm
+  (-> Nat
+      (-> Nat Int)
+    (-> Nat Int)))
+
+(define step-norm
+  (λ (a fa b)
+    (which-Nat b
+      (the Int
+        (right (add1 a)))
+      (λ (b-1)
+        (fa b-1)))))
+
+(define norm
+  (λ (a)
+    (rec-Nat a
+      base-norm
+      step-norm)))
+
+(claim WeakInt
+  U)
+
+(define WeakInt
+  (Pair Nat Nat))
+
+(claim WeakIntToInt
+  (-> WeakInt Int))
+
+(define WeakIntToInt
+  (λ (w)
+    (norm (car w) (cdr w))))
+
+(claim IntToWeakInt
+  (-> Int WeakInt))
+
+
+(define IntToWeakInt
+  TODO)
+;;; Exercise 15.2
+
+
+(claim WeakIntAdd
+  (-> WeakInt WeakInt WeakInt))
+
+(define WeakIntAdd
+  (λ (a b)
+    (cons (+ (car a) (car b))
+      (+ (cdr a) (cdr b)))))
+
+(claim IntAdd
+  (-> Int Int Int))
+
+(define IntAdd
+  (λ (a b)
+    (WeakIntToInt
+      (WeakIntAdd (IntToWeakInt a)
+        (IntToWeakInt b)))))
+
+;;; Assignment 15.4. Complete comm-WeakIntAdd and comm-IntAdd.
+
+(claim comm-WeakIntAdd
+  (Pi ((a WeakInt)
+       (b WeakInt))
+    (= WeakInt (WeakIntAdd a b) (WeakIntAdd b a))))
+
+(define comm-WeakIntAdd
+  (λ (w1 w2)
+(trans (cong (comm+ (car w1) (car w2)) (the (-> Nat WeakInt) (λ (x) (cons x (+ (cdr w1) (cdr w2))))))
+(cong (comm+ (cdr w1) (cdr w2)) (the (-> Nat WeakInt) (λ (x) (cons (+ (car w2) (car w1)) x)))))))
+
+
+(claim comm-IntAdd
+  (Pi ((a Int)
+       (b Int))
+    (= Int
+       (IntAdd a b)
+       (IntAdd b a))))
+
+(define comm-IntAdd
+  (λ(a b)
+    (cong (comm-WeakIntAdd (IntToWeakInt a) (IntToWeakInt b)) WeakIntToInt)))
+
+(claim neg5 Int)
+(define neg5 (left 5))
+(show-Int neg5)
+
+(claim pos5 Int)
+(define pos5 (right 5))
+(show-Int pos5)
+
+(claim zer Int)
+(define zer (left 0))
+(show-Int zer)
+
+(claim zer2 Int)
+(define zer2 (right 0))
+(show-Int zer2)
+
+(claim five (= Nat 5 5))
+(define five (same 5))
+
+(claim wi1 WeakInt)
+(define wi1 (cons 5 6))
+
+(claim wi2 WeakInt)
+(define wi2 (cons 2 3))
+
+(comm-WeakIntAdd wi1 wi2)
+
+(comm-IntAdd pos5 neg5)
